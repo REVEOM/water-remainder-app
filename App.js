@@ -11,7 +11,7 @@ import UserInputForm from './components/UserInputForm';
 
 const Stack = createStackNavigator();
 
-const App = () => {
+const App = (x) => {
   const [initialRoute, setInitialRoute] = useState('WelcomePage');
 
   useEffect(() => {
