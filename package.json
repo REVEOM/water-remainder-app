@@ -11,6 +11,7 @@
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-community/checkbox": "^0.5.17",
+    "@react-native-community/push-notification-ios": "^1.11.0",
     "@react-native-firebase/app": "^20.4.0",
     "@react-native-firebase/messaging": "^20.4.0",
     "@react-navigation/native": "^6.1.18",
@@ -19,6 +20,7 @@
     "expo": "~51.0.28",
     "expo-notifications": "~0.28.16",
     "expo-status-bar": "~1.12.1",
+    "lottie": "^0.0.1",
     "react": "18.2.0",
     "react-native": "0.74.5",
     "react-native-gesture-handler": "^2.18.1",

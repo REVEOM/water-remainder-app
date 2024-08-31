@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Switch } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -30,16 +30,42 @@ const RegisterPage = ({ navigation }) => {
       const jsonValue = JSON.stringify(userData);
       await AsyncStorage.setItem('@user_data', jsonValue);
       Alert.alert('Kayıt Başarılı', 'Kayıt başarılı! Verileriniz kaydedildi.');
-      navigation.navigate('LoginPage'); // Başarılı kayıt sonrası Login sayfasına yönlendirme
+
+      // Form alanlarını sıfırla
+      setUsername('');
+      setPassword('');
+      setEmail('');
+      setAge('');
+      setWeight('');
+      setIsTermsAccepted(false);
+
+      // Başarılı kayıt sonrası Login sayfasına yönlendirme
+      navigation.navigate('LoginPage');
     } catch (e) {
       console.error('Error saving user data:', e);
       Alert.alert('Kayıt Hatası', 'Veriler kaydedilemedi. Lütfen tekrar deneyin.');
     }
   };
 
+  // E-posta doğrulama fonksiyonu
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
+
   const handleRegister = () => {
     if (!username || !password || !email || !age || !weight) {
       Alert.alert('Eksik Bilgi', 'Lütfen tüm alanları doldurunuz.');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert('Geçersiz E-posta', 'Lütfen geçerli bir e-posta adresi giriniz.');
+      return;
+    }
+
+    if (isNaN(age) || isNaN(weight)) {
+      Alert.alert('Geçersiz Girdi', 'Lütfen yaş ve kilo için sayısal bir değer giriniz.');
       return;
     }
 
@@ -65,6 +91,8 @@ const RegisterPage = ({ navigation }) => {
         onChangeText={(text) => setEmail(text)}
         value={email}
         style={styles.input}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
       <TextInput
         placeholder="Şifre"

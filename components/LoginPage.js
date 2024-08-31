@@ -19,7 +19,8 @@ const LoginPage = ({ navigation }) => {
       if (storedUserData) {
         if (storedUserData.username === username && storedUserData.password === password) {
           Alert.alert('Giriş Başarılı', 'Hoşgeldiniz ' + storedUserData.username + '!');
-          navigation.navigate('UserInputForm');
+          await AsyncStorage.setItem('@is_logged_in', 'true'); // Oturum durumunu kaydediyoruz
+          navigation.replace('UserInputForm'); // replace kullanarak geri dönmeyi engelleriz
         } else {
           Alert.alert('Giriş Hatası', 'Kullanıcı adı veya şifre hatalı.');
         }

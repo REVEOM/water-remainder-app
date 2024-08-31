@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const WelcomePage = ({ navigation }) => {
   const handleStart = () => {
     // Kullanıcı "Hadi Başlayalım" butonuna tıkladığında nereye yönlendirilmesini belirler
-    navigation.navigate('RegisterPage'); //Kaydolmak üzere kullanıcıyı RegisterPage'e Yönlendirir.
+    navigation.navigate('RegisterPage'); // Kaydolmak üzere kullanıcıyı RegisterPage'e Yönlendirir.
   };
 
   return (
@@ -24,33 +24,39 @@ const WelcomePage = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop:150,
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
-    
+    padding: 20,
+    backgroundColor: '#f0f8ff', // Hafif arka plan rengi
   },
- 
   title: {
-    fontSize: 40,
+    fontSize: 36,
     fontWeight: 'bold',
-    marginBottom: 100,
+    marginBottom: 20,
+    color: '#333', // Başlık rengi
   },
   description: {
-    fontSize: 16,
+    fontSize: 18,
     textAlign: 'center',
-    marginBottom: 100,
+    marginBottom: 40,
+    color: '#555', // Açıklama rengi
   },
   startButton: {
     backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 20,
-    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
   },
   startButtonText: {
     color: 'white',
     fontSize: 20,
+    fontWeight: '600',
   },
 });
 
 export default WelcomePage;
-

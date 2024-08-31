@@ -1,12 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import PushNotification from 'react-native-push-notification';
 
-const UserInputForm = ({ navigation }) => {
+
+const UserInputForm = () => {
   const [waterIntakeGoal, setWaterIntakeGoal] = useState(0);
   const [waterIntake, setWaterIntake] = useState('');
+  const navigation = useNavigation();
 
   useEffect(() => {
+    // Bildirim yapılandırması
+    PushNotification.configure({
+      onNotification: function (notification) {
+        console.log("Notification received:", notification);
+      },
+      // Gereksiz izinleri istemekten kaçının
+      requestPermissions: Platform.OS === 'ios',
+    });
+
+    const resetNavigation = () => {
+      // Navigasyon yığınını sıfırla ve sadece 'UserInputForm' ekranını tut
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'UserInputForm' }],
+      });
+    };
+
+    resetNavigation(); 
+
     const fetchUserData = async () => {
       try {
         const jsonValue = await AsyncStorage.getItem('@user_data');
@@ -35,7 +58,38 @@ const UserInputForm = ({ navigation }) => {
     };
 
     fetchUserData();
-  }, []);
+  }, []); // Boş bir bağımlılık dizisiyle, useEffect sadece bileşen ilk kez render edildiğinde çalışır.
+
+  useEffect(() => {
+    const scheduleNotifications = async () => {
+      try {
+        const jsonValue = await AsyncStorage.getItem('@user_data');
+        const storedUserData = jsonValue != null ? JSON.parse(jsonValue) : null;
+
+        if (storedUserData && storedUserData.waterIntake < storedUserData.waterIntakeGoal) {
+          // İlk bildirim 1 saat sonra
+          PushNotification.localNotificationSchedule({
+            message: "Su içme zamanınız geldi!",
+            date: new Date(Date.now() + 60 * 60 * 1000) // 1 saat sonra
+          });
+
+          // Sonraki bildirimler 3 dakikada bir
+          const intervalId = setInterval(() => {
+            PushNotification.localNotification({
+              message: "Su içme zamanı!",
+            });
+          }, 3 * 60 * 1000); // 3 dakikada bir
+
+          // Bildirimler için clear işlemi, componentWillUnmount için bir clean-up return
+          return () => clearInterval(intervalId);
+        }
+      } catch (e) {
+        console.error('Error scheduling notifications:', e);
+      }
+    };
+
+    scheduleNotifications();
+  }, [waterIntakeGoal]); // waterIntakeGoal değiştiğinde yeniden planla
 
   const handleSubmit = async () => {
     try {
@@ -45,6 +99,11 @@ const UserInputForm = ({ navigation }) => {
       if (storedUserData) {
         const updatedWaterIntake = parseFloat(storedUserData.waterIntake || 0) + parseFloat(waterIntake);
         storedUserData.waterIntake = updatedWaterIntake.toFixed(2);
+
+        // Hedefe ulaşıldı mı kontrol et
+        if (updatedWaterIntake >= storedUserData.waterIntakeGoal) {
+          PushNotification.cancelAllLocalNotifications();
+        }
 
         // Calculate remaining water intake goal
         const remainingGoal = storedUserData.waterIntakeGoal - storedUserData.waterIntake;
@@ -60,22 +119,17 @@ const UserInputForm = ({ navigation }) => {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert(
       'Çıkış Yapmak Üzeresiniz',
-      'Çıkış yaparsanız bütün verileriniz silinecektir.',
+      'Çıkış yaparsanız verileriniz saklanmaya devam edecektir, sadece oturumunuz kapatılacaktır.',
       [
         { text: 'İptal', style: 'cancel' },
         {
           text: 'Çıkış Yap',
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem('@user_data');
-              navigation.navigate('LoginPage');
-            } catch (e) {
-              console.error('Error clearing user data:', e);
-              Alert.alert('Çıkış Hatası', 'Çıkış yaparken bir hata oluştu.');
-            }
+          onPress: () => {
+            // Kullanıcının sadece çıkış yapmasını ve verileri saklamaya devam etmesini sağla
+            navigation.navigate('LoginPage');
           },
         },
       ]
@@ -99,7 +153,7 @@ const UserInputForm = ({ navigation }) => {
         <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
       </TouchableOpacity>
       <Text style={styles.warningText}>
-        Çıkış yaparsanız bütün verileriniz silinecektir.
+        Çıkış yaparsanız verileriniz saklanmaya devam edecektir, sadece oturumunuz kapatılacaktır.
       </Text>
     </View>
   );
